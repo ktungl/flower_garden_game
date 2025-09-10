@@ -28,12 +28,12 @@ class _GameScreenState extends State<GameScreen> {
   int timeRemaining = 60;
   bool gameRunning = true;
   bool gameOver = false;
-  
+
   Timer? gameTimer;
   List<Flower> flowers = [];
   List<Mushroom> mushrooms = [];
   Offset? playerPosition = Offset(200, 200);
-  
+
   final Random random = Random();
 
   @override
@@ -48,7 +48,7 @@ class _GameScreenState extends State<GameScreen> {
   void startGame() {
     // 生成初始蘑菇
     generateMushrooms();
-    
+
     // 開始計時器
     gameTimer = Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
@@ -63,11 +63,19 @@ class _GameScreenState extends State<GameScreen> {
 
   void generateMushrooms() {
     mushrooms.clear();
+
+    // 獲取螢幕尺寸
+    final size = MediaQuery.of(context).size;
+    final availableWidth = size.width - 60; // 左右留30像素邊距
+    final availableHeight = size.height - 200; // 上下留空間給UI元素
+
     for (int i = 0; i < 5; i++) {
-      mushrooms.add(Mushroom(
-        x: 50 + random.nextDouble() * 300,
-        y: 50 + random.nextDouble() * 500,
-      ));
+      mushrooms.add(
+        Mushroom(
+          x: 30 + random.nextDouble() * availableWidth,
+          y: 50 + random.nextDouble() * availableHeight,
+        ),
+      );
     }
   }
 
@@ -75,7 +83,7 @@ class _GameScreenState extends State<GameScreen> {
     if (!gameRunning) return;
 
     final tapPosition = details.localPosition;
-    
+
     // 移動玩家角色
     setState(() {
       playerPosition = tapPosition;
@@ -90,7 +98,7 @@ class _GameScreenState extends State<GameScreen> {
           mushrooms.removeAt(i);
           hitMushroom = true;
         });
-        
+
         if (lives <= 0) {
           endGame("遊戲結束！");
           return;
@@ -113,7 +121,7 @@ class _GameScreenState extends State<GameScreen> {
 
   bool checkCollision(Offset tapPos, Mushroom mushroom) {
     double distance = sqrt(
-      pow(tapPos.dx - mushroom.x, 2) + pow(tapPos.dy - mushroom.y, 2)
+      pow(tapPos.dx - mushroom.x, 2) + pow(tapPos.dy - mushroom.y, 2),
     );
     return distance < 30; // 碰撞範圍
   }
@@ -124,7 +132,7 @@ class _GameScreenState extends State<GameScreen> {
       gameOver = true;
     });
     gameTimer?.cancel();
-    
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -168,10 +176,7 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('種花遊戲'),
-        backgroundColor: Colors.green,
-      ),
+      appBar: AppBar(title: Text('種花遊戲'), backgroundColor: Colors.green),
       body: Column(
         children: [
           // 遊戲資訊欄
@@ -181,13 +186,22 @@ class _GameScreenState extends State<GameScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Text('得分: $score', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text('生命: $lives', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text('時間: $timeRemaining', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  '得分: $score',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  '生命: $lives',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  '時間: $timeRemaining',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ],
             ),
           ),
-          
+
           // 遊戲說明
           Container(
             padding: EdgeInsets.all(8),
@@ -197,7 +211,7 @@ class _GameScreenState extends State<GameScreen> {
               textAlign: TextAlign.center,
             ),
           ),
-          
+
           // 遊戲區域
           Expanded(
             child: Container(
@@ -253,14 +267,14 @@ class GamePainter extends CustomPainter {
 
   void drawFlower(Canvas canvas, Flower flower) {
     final paint = Paint();
-    
+
     // 花瓣
     paint.color = Colors.pink;
     canvas.drawCircle(Offset(flower.x - 10, flower.y), 8, paint);
     canvas.drawCircle(Offset(flower.x + 10, flower.y), 8, paint);
     canvas.drawCircle(Offset(flower.x, flower.y - 10), 8, paint);
     canvas.drawCircle(Offset(flower.x, flower.y + 10), 8, paint);
-    
+
     // 花心
     paint.color = flower.centerColor;
     canvas.drawCircle(Offset(flower.x, flower.y), 6, paint);
@@ -268,17 +282,14 @@ class GamePainter extends CustomPainter {
 
   void drawMushroom(Canvas canvas, Mushroom mushroom) {
     final paint = Paint();
-    
+
     // 蘑菇帽
     paint.color = Colors.red;
     canvas.drawCircle(Offset(mushroom.x, mushroom.y - 10), 15, paint);
-    
+
     // 蘑菇柄
     paint.color = Colors.brown[100]!;
-    canvas.drawRect(
-      Rect.fromLTWH(mushroom.x - 5, mushroom.y, 10, 20),
-      paint,
-    );
+    canvas.drawRect(Rect.fromLTWH(mushroom.x - 5, mushroom.y, 10, 20), paint);
   }
 
   void drawPlayer(Canvas canvas, Offset position) {
@@ -295,8 +306,7 @@ class Flower {
   final double y;
   final Color centerColor;
 
-  Flower({required this.x, required this.y})
-      : centerColor = _getRandomColor();
+  Flower({required this.x, required this.y}) : centerColor = _getRandomColor();
 
   static Color _getRandomColor() {
     final colors = [

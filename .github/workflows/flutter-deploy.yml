@@ -11,8 +11,11 @@ permissions:
 
 jobs:
   build:
-    name: Build
+    name: Build and Deploy
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     
     steps:
     - name: Checkout
@@ -36,10 +39,14 @@ jobs:
     - name: Build web
       run: flutter build web --release --base-href /flower_garden_game/
       
-    - name: Upload Pages artifact
-      uses: actions/upload-pages-artifact@v2
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+      
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
       with:
         path: ./build/web
         
     - name: Deploy to GitHub Pages
-      uses: actions/deploy-pages@v2
+      id: deployment
+      uses: actions/deploy-pages@v4

@@ -2,8 +2,7 @@ name: Build and Deploy Flutter Web
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -12,18 +11,25 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.16.0'
+        flutter-version: '3.24.0'
+        channel: 'stable'
+        
+    - name: Disable analytics
+      run: flutter config --no-analytics
         
     - name: Install dependencies
       run: flutter pub get
       
+    - name: Enable web
+      run: flutter config --enable-web
+      
     - name: Build web
-      run: flutter build web --release
+      run: flutter build web --release --base-href /flower_garden_game/
       
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
